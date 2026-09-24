@@ -1,0 +1,2025 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>EMP — Easy Media Processing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#EEF1F6; --card:#FFFFFF; --ink:#121B2D; --muted:#5B6780; --line:#E1E6EF;
+  --primary:#2563EB; --primary-hover:#1D4FD0; --on-primary:#FFFFFF; --primary-soft:#E9F0FF;
+  --accent-text:#1D4FD0; --stage:#E6EBF3; --danger:#B42334;
+  --toast-bg:#121B2D; --toast-ink:#FFFFFF;
+  --chk-a:#D9DDE5; --chk-b:#F1F3F7;
+  --shadow:0 1px 2px rgba(18,27,45,.05),0 8px 24px rgba(18,27,45,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1320; --card:#171E2E; --ink:#E9EEFA; --muted:#98A5BF; --line:#2A3449;
+    --primary:#2F6DF0; --primary-hover:#4C82F5; --primary-soft:#1B2A4E;
+    --accent-text:#8FB3FF; --stage:#101625; --danger:#FF7B88;
+    --toast-bg:#E9EEFA; --toast-ink:#121B2D;
+    --chk-a:#2A3040; --chk-b:#353C50;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1320; --card:#171E2E; --ink:#E9EEFA; --muted:#98A5BF; --line:#2A3449;
+  --primary:#2F6DF0; --primary-hover:#4C82F5; --primary-soft:#1B2A4E;
+  --accent-text:#8FB3FF; --stage:#101625; --danger:#FF7B88;
+  --toast-bg:#E9EEFA; --toast-ink:#121B2D;
+  --chk-a:#2A3040; --chk-b:#353C50;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35);
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+*,*::before,*::after{box-sizing:inherit}
+[hidden]{display:none !important}
+body{
+  margin:0;min-height:100%;background:var(--bg);color:var(--ink);
+  font-family:'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+  font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;
+}
+h1,h2,p{margin:0}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+
+.wrap{
+  max-width:1160px;margin:0 auto;
+  padding:20px max(16px,env(safe-area-inset-right,0px)) 40px max(16px,env(safe-area-inset-left,0px));
+}
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}
+.brand h1{font-size:clamp(23px,4.2vw,30px);font-weight:800;letter-spacing:-.025em;line-height:1.15}
+.brand h1 .brand-sub{font-size:.42em;font-weight:600;color:var(--muted);letter-spacing:0;margin-left:2px}
+.brand p{color:var(--muted);font-size:14px;margin-top:2px}
+
+main{display:grid;gap:16px}
+.workspace{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px;align-items:start}
+.card{background:var(--card);border-radius:18px;box-shadow:var(--shadow);padding:18px}
+.card h2{font-size:17px;font-weight:800;letter-spacing:-.01em}
+.muted{color:var(--muted);font-size:14px}
+
+/* Buttons */
+.btn{
+  min-height:44px;padding:0 18px;border-radius:12px;border:1.5px solid transparent;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  font-weight:700;font-size:15px;cursor:pointer;white-space:nowrap;
+  transition:background .15s,border-color .15s,box-shadow .15s;
+}
+.btn svg{width:18px;height:18px;flex:none}
+.btn.primary{background:var(--primary);color:var(--on-primary)}
+.btn.primary:hover:not(:disabled){background:var(--primary-hover)}
+.btn.secondary{background:var(--card);color:var(--accent-text);border-color:var(--primary)}
+.btn.secondary:hover:not(:disabled){background:var(--primary-soft)}
+.btn.tonal{background:var(--primary-soft);color:var(--accent-text)}
+.btn.tonal:hover:not(:disabled){border-color:var(--primary)}
+.btn.big{min-height:52px;padding:0 26px;font-size:16px;box-shadow:0 6px 18px rgba(37,99,235,.28)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:active:not(:disabled){transform:translateY(1px)}
+.link{
+  background:none;border:0;color:var(--accent-text);font-weight:700;font-size:14px;
+  min-height:44px;padding:0 6px;cursor:pointer;border-radius:8px;
+}
+.link:hover{text-decoration:underline}
+
+label.btn{user-select:none;-webkit-user-select:none}
+.visually-hidden{position:fixed;left:0;top:0;width:1px;height:1px;opacity:0;overflow:hidden}
+
+/* Editor */
+.editor{position:relative;min-height:440px;display:flex;flex-direction:column}
+.empty{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px;
+  padding:32px 18px;border:2px dashed var(--line);border-radius:14px;
+}
+.empty svg{width:170px;height:auto;margin-bottom:6px}
+.empty h2{font-size:clamp(22px,3.4vw,28px);font-weight:800;letter-spacing:-.02em}
+.empty p{color:var(--muted);max-width:34ch}
+.empty .btn{margin-top:8px}
+.empty .small{font-size:13px;margin-top:6px}
+
+.canvas-wrap{
+  background:var(--stage);border-radius:14px;padding:14px;
+  display:flex;justify-content:center;align-items:center;
+}
+.stage{
+  position:relative;flex:none;border-radius:3px;user-select:none;-webkit-user-select:none;
+  box-shadow:0 2px 14px rgba(0,0,0,.22);
+  background:conic-gradient(var(--chk-a) 25%,var(--chk-b) 0 50%,var(--chk-a) 0 75%,var(--chk-b) 0) 0 0/16px 16px;
+}
+.stage #pic{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;-webkit-user-drag:none;
+  background-image:linear-gradient(45deg,#e6e8ee 25%,transparent 25%),linear-gradient(-45deg,#e6e8ee 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#e6e8ee 75%),linear-gradient(-45deg,transparent 75%,#e6e8ee 75%);
+  background-size:16px 16px;background-position:0 0,0 8px,8px -8px,-8px 0}
+.overlay{position:absolute;inset:0;pointer-events:none}
+.editor-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:8px;min-height:44px}
+.editor-foot p{color:var(--muted);font-size:14px}
+
+.line{position:absolute;pointer-events:auto;outline:none;z-index:2}
+.line.v{top:0;bottom:0;transform:translateX(-50%);cursor:col-resize;touch-action:pan-y}
+.line.h{left:0;right:0;transform:translateY(-50%);cursor:row-resize;touch-action:pan-x}
+.line .band{position:absolute;pointer-events:none;background:rgba(37,99,235,.24)}
+.line.v .band{top:0;bottom:0;left:50%;width:var(--band,0px);transform:translateX(-50%)}
+.line.h .band{left:0;right:0;top:50%;height:var(--band,0px);transform:translateY(-50%)}
+.line .rule{position:absolute;background:#2563EB;box-shadow:0 0 0 1px rgba(255,255,255,.92),0 0 6px rgba(0,0,0,.28);pointer-events:none}
+.line.v .rule{top:0;bottom:0;left:50%;width:2px;margin-left:-1px}
+.line.h .rule{left:0;right:0;top:50%;height:2px;margin-top:-1px}
+.line .grip{
+  position:absolute;left:50%;top:50%;background:#fff;border:2px solid #2563EB;border-radius:8px;
+  box-shadow:0 1px 5px rgba(0,0,0,.32);pointer-events:none;transition:transform .12s,background .12s;
+}
+.line.v .grip{width:12px;height:36px;margin:-18px 0 0 -6px}
+.line.h .grip{width:36px;height:12px;margin:-6px 0 0 -18px}
+.line:hover .grip,.line:focus-visible .grip,.line.active .grip{transform:scale(1.12);background:#2563EB}
+.line.active .rule{background:#1D4FD0}
+
+.num{
+  position:absolute;transform:translate(-50%,-50%);display:grid;place-items:center;
+  border-radius:999px;background:rgba(255,255,255,.93);color:#121B2D;font-weight:800;
+  box-shadow:0 1px 5px rgba(0,0,0,.28);pointer-events:none;font-variant-numeric:tabular-nums;
+}
+.num[data-s="l"]{min-width:30px;height:30px;padding:0 7px;font-size:14px}
+.num[data-s="m"]{min-width:24px;height:24px;padding:0 5px;font-size:12px}
+.num[data-s="s"]{min-width:18px;height:18px;padding:0 4px;font-size:10px}
+.num[data-s="x"]{display:none}
+
+.drop-overlay{
+  position:absolute;inset:8px;border-radius:14px;background:var(--primary-soft);opacity:.97;
+  border:2.5px dashed var(--primary);display:none;align-items:center;justify-content:center;
+  font-weight:800;font-size:clamp(18px,3vw,24px);color:var(--accent-text);z-index:20;text-align:center;padding:16px;
+}
+body.dropping .drop-overlay{display:flex}
+
+/* Panel */
+.panel{position:sticky;top:16px;display:grid;gap:14px}
+.presets{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.preset{
+  min-height:44px;border-radius:12px;border:1.5px solid var(--line);background:var(--card);
+  font-weight:700;cursor:pointer;transition:background .15s,border-color .15s,color .15s;
+}
+.preset:hover{border-color:var(--primary)}
+.preset[aria-checked="true"]{background:var(--primary);border-color:var(--primary);color:var(--on-primary);box-shadow:0 3px 10px rgba(37,99,235,.32)}
+.custom{display:grid;gap:10px;padding:12px;border-radius:14px;background:var(--primary-soft)}
+.stepper-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.stepper-row > span{font-weight:700}
+.stepper{display:flex;align-items:center;gap:6px}
+.stepper button{
+  width:44px;height:44px;border-radius:12px;border:1.5px solid var(--line);background:var(--card);
+  font-size:22px;line-height:1;cursor:pointer;
+}
+.stepper button:hover:not(:disabled){border-color:var(--primary)}
+.stepper button:disabled{opacity:.4;cursor:not-allowed}
+.stepper output{min-width:34px;text-align:center;font-weight:800;font-size:18px;font-variant-numeric:tabular-nums}
+.divider{border:0;border-top:1px solid var(--line);margin:2px 0}
+.field{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.field > span:first-child{font-weight:700}
+.input-suffix{
+  display:flex;align-items:center;width:132px;min-height:44px;padding-right:12px;
+  border:1.5px solid var(--line);border-radius:12px;background:var(--card);color:var(--muted);
+}
+.input-suffix input{flex:1;min-width:0;height:41px;border:0;background:transparent;outline:0;padding:0 4px 0 12px;font-weight:700;color:var(--ink)}
+.input-suffix:focus-within{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
+.select{
+  appearance:none;-webkit-appearance:none;width:132px;min-height:44px;padding:0 34px 0 12px;
+  border:1.5px solid var(--line);border-radius:12px;background-color:var(--card);font-weight:700;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%235B6780' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;
+}
+.select:focus-visible{border-color:var(--primary)}
+.hint-line{font-size:12.5px;color:var(--muted);margin-top:6px;line-height:1.4}
+.hint-line[data-warn="true"]{color:var(--danger);font-weight:600}
+.bg-row{display:flex;align-items:center;gap:12px;margin:10px 0}
+.bg-swatch{width:42px;height:42px;border-radius:11px;border:1.5px solid var(--line);padding:2px;cursor:pointer;background:var(--card);flex:none}
+.bg-actions{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+.bg-actions .btn{flex:1;min-width:140px}
+.stage.picking, .stage.picking *{cursor:crosshair!important}
+#btnBgEyedrop[aria-pressed="true"]{background:var(--primary-soft);border-color:var(--primary);color:var(--accent-text)}
+.check{display:flex;align-items:center;gap:12px;min-height:44px;cursor:pointer;font-weight:700}
+.check input{width:22px;height:22px;accent-color:var(--primary);flex:none;cursor:pointer}
+.check small{display:block;font-weight:500;color:var(--muted);font-size:12.5px;line-height:1.35}
+
+/* Results */
+.sec-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:2px 16px;margin-bottom:14px}
+.result-grid{display:grid;gap:10px}
+.tile{
+  position:relative;margin:0;border-radius:12px;overflow:hidden;border:1px solid var(--line);
+  background:conic-gradient(var(--chk-a) 25%,var(--chk-b) 0 50%,var(--chk-a) 0 75%,var(--chk-b) 0) 0 0/12px 12px;
+}
+.tile canvas{display:block;width:100%;height:auto}
+.tile-n{
+  position:absolute;left:6px;top:6px;min-width:22px;height:22px;padding:0 6px;border-radius:999px;
+  background:rgba(18,27,45,.8);color:#fff;font-size:12px;font-weight:800;display:grid;place-items:center;
+  font-variant-numeric:tabular-nums;
+}
+.empty-note{padding:26px 8px;text-align:center;border:2px dashed var(--line);border-radius:14px}
+
+/* Downloads */
+.dl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px}
+.dl{display:grid;gap:8px;justify-items:stretch}
+.dl p{color:var(--muted);font-size:13.5px;text-align:center}
+.img-options{margin-top:16px;padding:14px;border-radius:14px;background:var(--primary-soft);display:grid;gap:12px}
+.opt-row{display:flex;flex-wrap:wrap;gap:10px}
+.opt-row .btn{background:var(--card)}
+.img-options .hint{font-size:13px;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{
+  min-width:44px;height:44px;padding:0 10px;border-radius:12px;border:1.5px solid var(--line);
+  background:var(--card);font-weight:800;cursor:pointer;font-variant-numeric:tabular-nums;
+}
+.chip:hover:not(:disabled){border-color:var(--primary);color:var(--accent-text)}
+.chip:disabled{opacity:.45;cursor:not-allowed}
+.privacy{margin-top:16px;color:var(--muted);font-size:13px}
+
+/* Gabung PDF */
+.merge-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.pdf-list{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:8px}
+.pdf-item{display:flex;align-items:center;gap:8px;padding:8px 8px 8px 14px;border:1.5px solid var(--line);border-radius:12px;background:var(--card)}
+.pdf-item .meta{flex:1;min-width:0}
+.pdf-item .name{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pdf-item .info{font-size:12.5px;color:var(--muted)}
+.icon-btn{width:44px;height:44px;flex:none;border-radius:12px;border:1.5px solid var(--line);background:var(--card);cursor:pointer;display:grid;place-items:center}
+.icon-btn svg{width:18px;height:18px}
+.icon-btn:hover:not(:disabled){border-color:var(--primary);color:var(--accent-text)}
+.icon-btn:disabled{opacity:.35;cursor:not-allowed}
+.icon-btn[aria-pressed="true"]{background:var(--primary-soft);border-color:var(--primary);color:var(--accent-text)}
+.merge-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-top:14px}
+#pdfSummary{margin-top:10px}
+
+/* Flipbook */
+.fb-stage{margin-top:16px;padding:14px 10px 12px;border-radius:14px;background:var(--stage);display:flex;flex-direction:column;align-items:center;gap:12px;overflow:hidden;outline:none}
+.fb-stage:fullscreen{margin:0;border-radius:0;justify-content:center;padding:16px}
+.fb-head{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.fb-title{font-weight:700;font-size:14px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fb-tools{display:flex;gap:6px;flex:none}
+.fb-view{width:100%;display:flex;justify-content:center;perspective:2600px;touch-action:pan-y;user-select:none;-webkit-user-select:none;cursor:pointer}
+.fb-book{position:relative;flex:none;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.45,.05,.25,1)}
+.fb-leaf{position:absolute;top:0;transform-style:preserve-3d;transform-origin:left center;transition:transform .8s cubic-bezier(.45,.05,.25,1),opacity .5s}
+.fb-book.double .fb-leaf.flipped{transform:rotateY(-180deg)}
+.fb-book.single .fb-leaf.flipped{transform:rotateY(-95deg);opacity:0;pointer-events:none}
+.fb-book.no-anim,.fb-book.no-anim .fb-leaf{transition:none !important}
+.fb-face{position:absolute;inset:0;background:#fff;overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:0 3px 14px rgba(0,0,0,.28)}
+.fb-face.back{transform:rotateY(180deg)}
+.fb-face canvas{display:block;width:100%;height:100%;object-fit:contain}
+.fb-face::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(to right,rgba(0,0,0,.22),rgba(0,0,0,0) 9%)}
+.fb-face.back::after{background:linear-gradient(to left,rgba(0,0,0,.22),rgba(0,0,0,0) 9%)}
+.fb-nav{display:flex;align-items:center;justify-content:center;gap:8px;width:100%}
+.fb-ind{flex:1;min-width:0;max-width:220px;text-align:center;font-weight:700;font-size:14px}
+
+/* Toast */
+.toast{
+  position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));
+  transform:translate(-50%,16px);opacity:0;pointer-events:none;z-index:50;
+  max-width:min(92vw,460px);padding:12px 18px;border-radius:14px;
+  background:var(--toast-bg);color:var(--toast-ink);font-weight:600;font-size:14px;text-align:center;
+  box-shadow:0 10px 30px rgba(0,0,0,.28);transition:opacity .2s,transform .2s;
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast[data-kind="error"]{background:var(--danger);color:#fff}
+
+@media (max-width:860px){
+  .workspace{grid-template-columns:1fr}
+  .panel{position:static}
+  .editor{min-height:360px}
+  .dl-grid{grid-template-columns:1fr}
+  .dl p{margin-bottom:6px}
+}
+@media (max-width:520px){
+  .card{padding:14px;border-radius:16px}
+  .canvas-wrap{padding:8px}
+  .top .btn{padding:0 14px}
+  .empty svg{width:140px}
+}
+@media (prefers-reduced-motion: reduce){
+  *{transition:none !important}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>EMP <span class="brand-sub">(Easy Media Processing)</span></h1>
+      <p>Potong gambar, jadikan PDF, dan buka sebagai flipbook. Tanpa ribet.</p>
+    </div>
+    <label id="btnChange" class="btn secondary" for="file" role="button" tabindex="0" hidden>Ganti Gambar</label>
+  </header>
+
+  <main>
+    <section class="workspace">
+      <div class="card editor" id="editorCard">
+        <div id="empty" class="empty">
+          <svg viewBox="0 0 170 120" aria-hidden="true">
+            <rect x="8" y="8" width="154" height="104" rx="16" fill="var(--primary-soft)" stroke="var(--primary)" stroke-width="2"/>
+            <path d="M59.3 8V112M110.7 8V112M8 42.7H162M8 77.3H162" stroke="var(--primary)" stroke-width="1.6" opacity=".55"/>
+            <rect x="53.3" y="52" width="12" height="16" rx="6" fill="#fff" stroke="var(--primary)" stroke-width="2"/>
+            <rect x="79" y="71.3" width="16" height="12" rx="6" fill="#fff" stroke="var(--primary)" stroke-width="2"/>
+            <circle cx="30" cy="26" r="7" fill="var(--primary)" opacity=".7"/>
+            <path d="M120 108l16-24 12 16 8-10 6 18z" fill="var(--primary)" opacity=".35"/>
+          </svg>
+          <h2>Potong gambar tanpa ribet.</h2>
+          <p>Upload gambar dan atur potongannya dalam beberapa klik.</p>
+          <label id="btnUpload" class="btn primary big" for="file" role="button" tabindex="0">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            Upload Gambar
+          </label>
+          <p class="small">atau seret gambar ke sini. Mendukung JPG, PNG, dan WEBP.</p>
+        </div>
+
+        <div id="editor" hidden>
+          <div class="canvas-wrap" id="canvasWrap">
+            <div class="stage" id="stage">
+              <canvas id="pic" role="img" aria-label="Gambar yang akan dipotong"></canvas>
+              <div class="overlay" id="overlay"></div>
+            </div>
+          </div>
+          <div class="editor-foot">
+            <p>Tarik garis biru untuk mengatur posisi potongan.</p>
+            <button id="btnEven" class="link" type="button" hidden>Ratakan Garis</button>
+          </div>
+        </div>
+
+        <div class="drop-overlay" aria-hidden="true">Lepaskan gambar di sini</div>
+      </div>
+
+      <aside class="card panel" aria-label="Pengaturan potongan">
+        <h2>Cara Potong</h2>
+        <div class="presets" role="radiogroup" aria-label="Pilih cara potong">
+          <button class="preset" role="radio" type="button" data-preset="2x2">2 × 2</button>
+          <button class="preset" role="radio" type="button" data-preset="3x3">3 × 3</button>
+          <button class="preset" role="radio" type="button" data-preset="3x4">3 × 4</button>
+          <button class="preset" role="radio" type="button" data-preset="4x4">4 × 4</button>
+          <button class="preset" role="radio" type="button" data-preset="custom">Custom</button>
+        </div>
+
+        <div id="custom" class="custom" hidden>
+          <div class="stepper-row">
+            <span>Kolom</span>
+            <div class="stepper">
+              <button type="button" data-step="cols:-1" aria-label="Kurangi kolom">−</button>
+              <output id="colsVal" aria-live="polite">3</output>
+              <button type="button" data-step="cols:1" aria-label="Tambah kolom">+</button>
+            </div>
+          </div>
+          <div class="stepper-row">
+            <span>Baris</span>
+            <div class="stepper">
+              <button type="button" data-step="rows:-1" aria-label="Kurangi baris">−</button>
+              <output id="rowsVal" aria-live="polite">3</output>
+              <button type="button" data-step="rows:1" aria-label="Tambah baris">+</button>
+            </div>
+          </div>
+        </div>
+
+        <hr class="divider">
+        <h2>Pengaturan</h2>
+
+        <label class="field">
+          <span>Overlap</span>
+          <span class="input-suffix">
+            <input id="overlap" type="number" inputmode="numeric" min="0" max="1000" step="1" value="0" aria-label="Overlap dalam piksel">
+            px
+          </span>
+        </label>
+
+        <label class="check">
+          <input type="checkbox" id="keep" checked>
+          <span>Pertahankan rasio
+            <small>Halaman PDF mengikuti rasio tiap potongan. Jika nonaktif, semua halaman berukuran sama.</small>
+          </span>
+        </label>
+
+        <label class="field">
+          <span>Format</span>
+          <select id="fmt" class="select" aria-label="Format file">
+            <option value="png">PNG</option>
+            <option value="jpg">JPG</option>
+            <option value="webp">WEBP</option>
+          </select>
+        </label>
+
+        <div>
+          <label class="field">
+            <span>Upscale</span>
+            <select id="scale" class="select" aria-label="Perbesar gambar saat download">
+              <option value="1">Asli (1×)</option>
+              <option value="2">2×</option>
+              <option value="3">3×</option>
+              <option value="4">4×</option>
+            </select>
+          </label>
+          <p id="upHint" class="hint-line" hidden></p>
+        </div>
+
+        <hr class="divider">
+        <h2>Hapus Background</h2>
+        <p class="hint-line">Cocok untuk foto berlatar polos (misalnya putih/hijau). Ambil warna latar, atur toleransi, lalu terapkan.</p>
+        <label id="btnBgFile" class="btn secondary" for="bgFile" role="button" tabindex="0" style="margin-bottom:10px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          Pilih Gambar untuk Dihapus Background-nya
+        </label>
+        <div class="bg-row">
+          <input id="bgColor" class="bg-swatch" type="color" value="#ffffff" aria-label="Warna latar yang ingin dihapus">
+          <button id="btnBgEyedrop" class="btn tonal" type="button" aria-pressed="false">Klik di Gambar</button>
+          <button id="btnBgPick" class="btn tonal" type="button">Ambil dari Sudut</button>
+        </div>
+        <p class="hint-line">Tips: klik "Klik di Gambar" lalu klik langsung di bagian latar (bukan bagian objek) supaya warna yang terhapus lebih tepat.</p>
+        <label class="field">
+          <span>Toleransi</span>
+          <span class="input-suffix">
+            <input id="bgTol" type="range" min="1" max="100" value="20" aria-label="Toleransi hapus background">
+            <output id="bgTolVal">20</output>
+          </span>
+        </label>
+        <div class="bg-actions">
+          <button id="btnBgApply" class="btn primary dl-lock" type="button"><span class="lbl">Hapus Background</span></button>
+          <button id="btnBgReset" class="btn secondary dl-lock" type="button" hidden>Kembalikan Asli</button>
+        </div>
+        <p id="bgHint" class="hint-line" hidden>Background sudah dihapus. Format otomatis diset ke PNG supaya transparansinya tersimpan.</p>
+      </aside>
+    </section>
+
+    <section class="card" id="resultsCard">
+      <div class="sec-head">
+        <h2 id="resultTitle">Hasil: 0 potongan</h2>
+        <p class="muted" id="resultMeta"></p>
+      </div>
+      <div id="resultGrid" class="result-grid" hidden></div>
+      <p id="resultEmpty" class="muted empty-note">Potongan akan muncul di sini setelah kamu upload gambar.</p>
+    </section>
+
+    <section class="card" id="downloadCard">
+      <h2>Download Hasil</h2>
+      <div class="dl-grid">
+        <div class="dl">
+          <button id="btnZip" class="btn primary dl-lock" type="button" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg>
+            <span class="lbl">ZIP</span>
+          </button>
+          <p>Semua potongan dalam 1 file ZIP</p>
+        </div>
+        <div class="dl">
+          <button id="btnImg" class="btn secondary dl-lock" type="button" aria-expanded="false" aria-controls="imgOptions" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg>
+            <span class="lbl">IMAGE</span>
+          </button>
+          <p>Download gambar hasil</p>
+        </div>
+        <div class="dl">
+          <button id="btnPdf" class="btn secondary dl-lock" type="button" aria-expanded="false" aria-controls="pdfOptions" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg>
+            <span class="lbl">PDF</span>
+          </button>
+          <p>Simpan potongan sebagai PDF</p>
+        </div>
+      </div>
+
+      <div id="imgOptions" class="img-options" hidden>
+        <div class="opt-row">
+          <button id="btnAll" class="btn tonal dl-lock" type="button"><span class="lbl">Download Semua</span></button>
+          <button id="btnIndiv" class="btn tonal dl-lock" type="button">Download Individual</button>
+        </div>
+        <div id="chipsBox" hidden>
+          <p class="hint" style="margin-bottom:8px">Pilih nomor potongan yang ingin diunduh:</p>
+          <div id="chips" class="chips"></div>
+        </div>
+      </div>
+
+      <div id="pdfOptions" class="img-options" hidden>
+        <div class="opt-row">
+          <button id="btnPdfOne" class="btn tonal dl-lock" type="button"><span class="lbl">1 PDF Semua Gambar</span></button>
+          <button id="btnPdfEach" class="btn tonal dl-lock" type="button"><span class="lbl">1 Gambar 1 PDF</span></button>
+        </div>
+        <p class="hint" style="margin-top:8px">"1 PDF Semua Gambar" menggabung semua potongan jadi satu file PDF. "1 Gambar 1 PDF" membuat PDF terpisah untuk tiap potongan, dikemas dalam 1 file ZIP.</p>
+      </div>
+
+      <p class="privacy">Gambar diproses di perangkatmu dan tidak diunggah ke server.</p>
+    </section>
+
+    <section class="card" id="mergeCard">
+      <h2>Gabung PDF</h2>
+      <p class="muted" style="margin-top:2px">Gabungkan beberapa PDF jadi 1 file, sesuai urutan di daftar.</p>
+      <div class="merge-actions">
+        <label id="btnAddPdf" class="btn secondary" for="pdfFile" role="button" tabindex="0">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          Tambah PDF
+        </label>
+        <label id="btnAddImg" class="btn secondary" for="pdfImgFile" role="button" tabindex="0">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          Tambah Gambar
+        </label>
+        <button id="btnAddSlices" class="btn tonal" type="button" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          <span class="lbl">Tambah hasil potongan</span>
+        </button>
+      </div>
+      <ul id="pdfList" class="pdf-list"></ul>
+      <p id="pdfEmpty" class="muted empty-note" style="margin-top:14px">Belum ada PDF. Tambahkan minimal 2 file untuk digabung.</p>
+      <p id="pdfSummary" class="muted" hidden></p>
+      <div class="merge-foot">
+        <button id="btnMerge" class="btn primary" type="button" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg>
+          <span class="lbl">Gabung jadi 1 PDF</span>
+        </button>
+        <button id="btnClearPdf" class="link" type="button" hidden>Kosongkan daftar</button>
+      </div>
+      <input id="pdfFile" class="visually-hidden" type="file" accept="application/pdf,.pdf" multiple tabindex="-1" aria-hidden="true">
+      <input id="pdfImgFile" class="visually-hidden" type="file" accept="image/png,image/jpeg,image/webp" multiple tabindex="-1" aria-hidden="true">
+    </section>
+
+    <section class="card" id="flipCard">
+      <h2>Flipbook</h2>
+      <p class="muted" style="margin-top:2px">Ubah PDF atau gambar jadi buku digital yang terbuka lembar per lembar.</p>
+      <div class="merge-actions">
+        <label id="btnFbPick" class="btn secondary" for="fbFile" role="button" tabindex="0">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          Pilih PDF
+        </label>
+        <label id="btnFbImages" class="btn secondary" for="fbImgFile" role="button" tabindex="0">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          Pilih Gambar
+        </label>
+        <button id="btnFbSlices" class="btn tonal" type="button" disabled><span class="lbl">Dari hasil potongan</span></button>
+        <button id="btnFbList" class="btn tonal" type="button" disabled><span class="lbl">Dari daftar Gabung PDF</span></button>
+      </div>
+
+      <div id="fbStage" class="fb-stage" tabindex="0" hidden role="group" aria-label="Flipbook. Gunakan panah kiri dan kanan untuk membuka halaman.">
+        <div class="fb-head">
+          <p id="fbTitle" class="fb-title"></p>
+          <div class="fb-tools">
+            <button id="btnFbSound" class="icon-btn" type="button" aria-pressed="true" aria-label="Suara buku dibuka: aktif">
+              <svg class="ic-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 9v6h4l5 4V5l-5 4H5z"/><path d="M16.4 8.6a4.6 4.6 0 0 1 0 6.8"/><path d="M19 6.2a8.2 8.2 0 0 1 0 11.6"/></svg>
+              <svg class="ic-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path d="M5 9v6h4l5 4V5l-5 4H5z"/><path d="M15.5 9.5l5 5M20.5 9.5l-5 5"/></svg>
+            </button>
+            <button id="btnFbFull" class="icon-btn" type="button" aria-label="Layar penuh">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+            </button>
+            <button id="btnFbClose" class="icon-btn" type="button" aria-label="Tutup buku">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </button>
+          </div>
+        </div>
+        <div id="fbView" class="fb-view"><div id="fbBook" class="fb-book"></div></div>
+        <div class="fb-nav">
+          <button id="btnFbFirst" class="icon-btn" type="button" aria-label="Ke halaman pertama"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 17l-5-5 5-5M18 17l-5-5 5-5"/></svg></button>
+          <button id="btnFbPrev" class="icon-btn" type="button" aria-label="Halaman sebelumnya"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+          <p id="fbInd" class="fb-ind" aria-live="polite"></p>
+          <button id="btnFbNext" class="icon-btn" type="button" aria-label="Halaman berikutnya"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+          <button id="btnFbLast" class="icon-btn" type="button" aria-label="Ke halaman terakhir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 17l5-5-5-5M6 17l5-5-5-5"/></svg></button>
+        </div>
+      </div>
+
+      <p id="fbEmpty" class="muted empty-note" style="margin-top:14px">Belum ada buku. Pilih PDF untuk mulai.</p>
+      <input id="fbFile" class="visually-hidden" type="file" accept="application/pdf,.pdf" tabindex="-1" aria-hidden="true">
+      <input id="fbImgFile" class="visually-hidden" type="file" accept="image/png,image/jpeg,image/webp" multiple tabindex="-1" aria-hidden="true">
+    </section>
+  </main>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<input id="file" class="visually-hidden" type="file" accept="image/*" tabindex="-1" aria-hidden="true">
+<input id="bgFile" class="visually-hidden" type="file" accept="image/*" tabindex="-1" aria-hidden="true">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script>
+(() => {
+  'use strict';
+
+  const $ = s => document.querySelector(s);
+  const $$ = s => Array.from(document.querySelectorAll(s));
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+  const MSG = {
+    type: 'Silakan upload gambar JPG, PNG, atau WEBP.',
+    big: 'Gambar terlalu besar. Silakan gunakan gambar dengan ukuran lebih kecil.',
+    fail: 'Gagal membuat file. Silakan coba lagi.',
+    up: 'Hasil upscale terlalu besar. Kurangi angka upscale atau gunakan gambar yang lebih kecil.',
+    pdfType: 'Silakan pilih file PDF.',
+    pdfRead: 'Ada file PDF yang tidak bisa dibaca. Pastikan file tidak dikunci password.',
+    fbRead: 'PDF tidak bisa dibuka. Pastikan file tidak dikunci password.',
+    fbMany: 'PDF terlalu banyak halaman untuk flipbook (maksimal 300 halaman).'
+  };
+  const MAX_FILE = 40 * 1024 * 1024;
+  const MAX_PIXELS = 100e6;
+  const SHARP = { 2: 0.25, 3: 0.35, 4: 0.45 };
+  const SHARP_MAX_PX = 25e6;
+  const PRESETS = { '2x2': [2, 2], '3x3': [3, 3], '3x4': [3, 4], '4x4': [4, 4] };
+  const MIME = { png: 'image/png', jpg: 'image/jpeg', webp: 'image/webp' };
+  const EXT = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp' };
+
+  const state = {
+    img: null, orig: null, url: null, w: 0, h: 0, prev: null, kx: 1, ky: 1,
+    preset: '3x3', cols: 3, rows: 3, v: [], hh: [],
+    overlap: 0, keep: true, fmt: 'png', scale: 1, busy: false, dirty: false, bgRemoved: false
+  };
+  let stageW = 0, stageH = 0, drag = null;
+  let bgPicking = false;
+  function setBgPicking(on) {
+    bgPicking = on;
+    el.stage.classList.toggle('picking', on);
+    el.bgEyedrop.setAttribute('aria-pressed', on ? 'true' : 'false');
+  }
+
+  const el = {
+    file: $('#file'), empty: $('#empty'), editor: $('#editor'), wrap: $('#canvasWrap'),
+    stage: $('#stage'), pic: $('#pic'), overlay: $('#overlay'),
+    change: $('#btnChange'), upload: $('#btnUpload'), even: $('#btnEven'),
+    custom: $('#custom'), colsVal: $('#colsVal'), rowsVal: $('#rowsVal'),
+    overlap: $('#overlap'), keep: $('#keep'), fmt: $('#fmt'), scale: $('#scale'), upHint: $('#upHint'),
+    resultsCard: $('#resultsCard'), resultTitle: $('#resultTitle'), resultMeta: $('#resultMeta'),
+    grid: $('#resultGrid'), resultEmpty: $('#resultEmpty'),
+    zip: $('#btnZip'), imgBtn: $('#btnImg'), pdf: $('#btnPdf'),
+    imgOptions: $('#imgOptions'), all: $('#btnAll'), indiv: $('#btnIndiv'),
+    chipsBox: $('#chipsBox'), chips: $('#chips'), toast: $('#toast'),
+    pdfOptions: $('#pdfOptions'), pdfOne: $('#btnPdfOne'), pdfEach: $('#btnPdfEach'),
+    pdfFile: $('#pdfFile'), pdfList: $('#pdfList'), pdfEmpty: $('#pdfEmpty'), pdfSummary: $('#pdfSummary'),
+    addPdf: $('#btnAddPdf'), addImg: $('#btnAddImg'), pdfImgFile: $('#pdfImgFile'),
+    addSlices: $('#btnAddSlices'), merge: $('#btnMerge'), clearPdf: $('#btnClearPdf'),
+    fbFile: $('#fbFile'), fbPick: $('#btnFbPick'), fbImages: $('#btnFbImages'), fbImgFile: $('#fbImgFile'),
+    fbSlices: $('#btnFbSlices'), fbList: $('#btnFbList'),
+    fbStage: $('#fbStage'), fbTitle: $('#fbTitle'), fbView: $('#fbView'), fbBook: $('#fbBook'), fbEmpty: $('#fbEmpty'), fbSound: $('#btnFbSound'),
+    fbFull: $('#btnFbFull'), fbClose: $('#btnFbClose'), fbFirst: $('#btnFbFirst'), fbPrev: $('#btnFbPrev'),
+    fbNext: $('#btnFbNext'), fbLast: $('#btnFbLast'), fbInd: $('#fbInd'),
+    bgColor: $('#bgColor'), bgPick: $('#btnBgPick'), bgEyedrop: $('#btnBgEyedrop'), bgTol: $('#bgTol'), bgTolVal: $('#bgTolVal'),
+    bgApply: $('#btnBgApply'), bgReset: $('#btnBgReset'), bgHint: $('#bgHint'),
+    bgFile: $('#bgFile'), bgFileBtn: $('#btnBgFile')
+  };
+
+  /* ---------- Toast ---------- */
+  let toastTimer;
+  function toast(msg, kind) {
+    el.toast.textContent = msg;
+    el.toast.dataset.kind = kind || 'info';
+    el.toast.setAttribute('role', kind === 'error' ? 'alert' : 'status');
+    el.toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.toast.classList.remove('show'), 4200);
+  }
+
+  /* ---------- Download capability ---------- */
+  let downloadsCap = null;
+  const capPromise = (async () => {
+    try {
+      const c = await new Promise(res => {
+        if (window.claude && window.claude.use) return res(window.claude);
+        let n = 0;
+        const t = setInterval(() => {
+          if (window.claude && window.claude.use) { clearInterval(t); res(window.claude); }
+          else if (++n > 30) { clearInterval(t); res(null); }
+        }, 100);
+      });
+      if (c) downloadsCap = await c.use('downloads');
+    } catch (e) { downloadsCap = null; }
+  })();
+
+  async function saveFile(filename, blob) {
+    await capPromise;
+    if (downloadsCap) {
+      try { await downloadsCap.save({ filename, data: blob }); return 'saved'; }
+      catch (e) { if (e && e.code === 'declined') return 'declined'; throw e; }
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    return 'saved';
+  }
+
+  /* ---------- Grid & geometry ---------- */
+  const evenLines = n => Array.from({ length: Math.max(0, n - 1) }, (_, i) => (i + 1) / n);
+  const edges = (fr, total) => [0, ...fr.map(f => f * total), total];
+
+  function computeSlices() {
+    const xs = edges(state.v, state.w).map(Math.round);
+    const ys = edges(state.hh, state.h).map(Math.round);
+    const o = state.overlap, out = [];
+    for (let r = 0; r < state.rows; r++) {
+      for (let c = 0; c < state.cols; c++) {
+        let x0 = xs[c], x1 = xs[c + 1], y0 = ys[r], y1 = ys[r + 1];
+        if (c > 0) x0 = Math.max(0, x0 - o);
+        if (c < state.cols - 1) x1 = Math.min(state.w, x1 + o);
+        if (r > 0) y0 = Math.max(0, y0 - o);
+        if (r < state.rows - 1) y1 = Math.min(state.h, y1 + o);
+        out.push({ i: out.length, r, c, x: x0, y: y0, w: Math.max(1, x1 - x0), h: Math.max(1, y1 - y0) });
+      }
+    }
+    return out;
+  }
+
+  function setGrid(c, r) {
+    state.cols = c; state.rows = r;
+    state.v = evenLines(c); state.hh = evenLines(r);
+    state.dirty = false;
+    syncUI();
+    if (state.img) { buildOverlay(); schedulePreview(); }
+  }
+
+  function syncUI() {
+    $$('.preset').forEach(b => b.setAttribute('aria-checked', String(b.dataset.preset === state.preset)));
+    el.custom.hidden = state.preset !== 'custom';
+    el.colsVal.textContent = state.cols;
+    el.rowsVal.textContent = state.rows;
+    $$('[data-step]').forEach(b => {
+      const [k, d] = b.dataset.step.split(':');
+      const v = state[k] + Number(d);
+      b.disabled = v < 1 || v > 10;
+    });
+    el.even.hidden = !(state.img && state.dirty);
+  }
+
+  /* ---------- Overlay (lines + numbers) ---------- */
+  function makeLine(axis, i) {
+    const d = document.createElement('div');
+    d.className = 'line ' + axis;
+    d.dataset.axis = axis; d.dataset.i = i;
+    d.tabIndex = 0;
+    d.setAttribute('role', 'slider');
+    d.setAttribute('aria-orientation', axis === 'v' ? 'horizontal' : 'vertical');
+    d.setAttribute('aria-label', (axis === 'v' ? 'Garis potong kolom ' : 'Garis potong baris ') + (i + 1));
+    d.setAttribute('aria-valuemin', '0');
+    d.setAttribute('aria-valuemax', '100');
+    d.innerHTML = '<span class="band"></span><span class="rule"></span><span class="grip"></span>';
+    return d;
+  }
+
+  function buildOverlay() {
+    el.overlay.textContent = '';
+    const n = state.cols * state.rows;
+    for (let i = 0; i < n; i++) {
+      const d = document.createElement('div');
+      d.className = 'num'; d.textContent = i + 1;
+      el.overlay.appendChild(d);
+    }
+    state.v.forEach((_, i) => el.overlay.appendChild(makeLine('v', i)));
+    state.hh.forEach((_, i) => el.overlay.appendChild(makeLine('h', i)));
+    updateOverlay();
+  }
+
+  function updateOverlay() {
+    if (!state.img || !stageW) return;
+    const sc = stageW / state.w;
+    const band = state.overlap * sc * 2 + 'px';
+    const exs = edges(state.v, stageW), eys = edges(state.hh, stageH);
+    const minGap = a => a.slice(1).reduce((m, x, i) => Math.min(m, x - a[i]), Infinity);
+    const hitV = clamp(minGap(exs), 22, 44), hitH = clamp(minGap(eys), 22, 44);
+
+    el.overlay.querySelectorAll('.line').forEach(ln => {
+      const i = Number(ln.dataset.i);
+      ln.style.setProperty('--band', band);
+      if (ln.dataset.axis === 'v') {
+        ln.style.left = state.v[i] * 100 + '%';
+        ln.style.width = hitV + 'px';
+        ln.setAttribute('aria-valuenow', Math.round(state.v[i] * 100));
+      } else {
+        ln.style.top = state.hh[i] * 100 + '%';
+        ln.style.height = hitH + 'px';
+        ln.setAttribute('aria-valuenow', Math.round(state.hh[i] * 100));
+      }
+    });
+
+    const nums = el.overlay.querySelectorAll('.num');
+    nums.forEach((n, idx) => {
+      const r = Math.floor(idx / state.cols), c = idx % state.cols;
+      const cw = exs[c + 1] - exs[c], ch = eys[r + 1] - eys[r];
+      n.style.left = (exs[c] + cw / 2) + 'px';
+      n.style.top = (eys[r] + ch / 2) + 'px';
+      const m = Math.min(cw, ch);
+      n.dataset.s = m >= 64 ? 'l' : m >= 36 ? 'm' : m >= 22 ? 's' : 'x';
+    });
+  }
+
+  function layoutStage() {
+    if (!state.img) return;
+    const cs = getComputedStyle(el.wrap);
+    const availW = el.wrap.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    if (availW < 40) return;
+    const maxH = clamp(window.innerHeight * 0.68, 300, 680);
+    const s = Math.min(availW / state.w, maxH / state.h);
+    stageW = Math.max(40, Math.floor(state.w * s));
+    stageH = Math.max(40, Math.floor(state.h * s));
+    el.stage.style.width = stageW + 'px';
+    el.stage.style.height = stageH + 'px';
+    updateOverlay();
+  }
+
+  function moveLine(axis, i, f) {
+    const arr = axis === 'v' ? state.v : state.hh;
+    const n = axis === 'v' ? state.cols : state.rows;
+    const dim = axis === 'v' ? state.w : state.h;
+    const gap = Math.min(Math.max(0.02, 6 / dim), 0.5 / n);
+    const lo = (i === 0 ? 0 : arr[i - 1]) + gap;
+    const hi = (i === arr.length - 1 ? 1 : arr[i + 1]) - gap;
+    arr[i] = clamp(f, lo, hi);
+    if (!state.dirty) { state.dirty = true; el.even.hidden = false; }
+    updateOverlay();
+    schedulePreview();
+  }
+
+  el.overlay.addEventListener('pointerdown', e => {
+    if (bgPicking) {
+      e.preventDefault();
+      const r = el.stage.getBoundingClientRect();
+      const fx = clamp((e.clientX - r.left) / r.width, 0, 1);
+      const fy = clamp((e.clientY - r.top) / r.height, 0, 1);
+      if (state.prev) {
+        const px = Math.min(state.prev.width - 1, Math.floor(fx * state.prev.width));
+        const py = Math.min(state.prev.height - 1, Math.floor(fy * state.prev.height));
+        try {
+          const d = state.prev.getContext('2d').getImageData(px, py, 1, 1).data;
+          el.bgColor.value = rgbToHex([d[0], d[1], d[2]]);
+          toast('Warna latar diambil dari titik yang kamu klik.');
+        } catch (_) {}
+      }
+      setBgPicking(false);
+      return;
+    }
+    const ln = e.target.closest('.line');
+    if (!ln) return;
+    e.preventDefault();
+    try { ln.setPointerCapture(e.pointerId); } catch (_) {}
+    drag = { axis: ln.dataset.axis, i: Number(ln.dataset.i), el: ln, id: e.pointerId };
+    ln.classList.add('active');
+    ln.focus({ preventScroll: true });
+  });
+  el.overlay.addEventListener('pointermove', e => {
+    if (!drag || e.pointerId !== drag.id) return;
+    const r = el.stage.getBoundingClientRect();
+    const f = drag.axis === 'v' ? (e.clientX - r.left) / r.width : (e.clientY - r.top) / r.height;
+    moveLine(drag.axis, drag.i, f);
+  });
+  const endDrag = e => {
+    if (!drag || e.pointerId !== drag.id) return;
+    drag.el.classList.remove('active');
+    drag = null;
+  };
+  el.overlay.addEventListener('pointerup', endDrag);
+  el.overlay.addEventListener('pointercancel', endDrag);
+  el.overlay.addEventListener('keydown', e => {
+    const ln = e.target.closest('.line');
+    if (!ln) return;
+    const axis = ln.dataset.axis, i = Number(ln.dataset.i);
+    const step = e.shiftKey ? 0.02 : 0.005;
+    let d = 0;
+    if (axis === 'v') { if (e.key === 'ArrowLeft') d = -step; if (e.key === 'ArrowRight') d = step; }
+    else { if (e.key === 'ArrowUp') d = -step; if (e.key === 'ArrowDown') d = step; }
+    if (!d) return;
+    e.preventDefault();
+    moveLine(axis, i, (axis === 'v' ? state.v : state.hh)[i] + d);
+  });
+
+  el.even.addEventListener('click', () => setGrid(state.cols, state.rows));
+
+  /* ---------- Live preview ---------- */
+  let previewQueued = false;
+  function schedulePreview() {
+    if (previewQueued) return;
+    previewQueued = true;
+    requestAnimationFrame(() => { previewQueued = false; renderPreview(); });
+  }
+
+  function drawThumb(canvas, s) {
+    const k = Math.min(1, 260 / Math.max(s.w, s.h));
+    const tw = Math.max(1, Math.round(s.w * k)), th = Math.max(1, Math.round(s.h * k));
+    if (canvas.width !== tw) canvas.width = tw;
+    if (canvas.height !== th) canvas.height = th;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, tw, th);
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(state.prev, s.x * state.kx, s.y * state.ky, s.w * state.kx, s.h * state.ky, 0, 0, tw, th);
+  }
+
+  function applyResultGrid() {
+    const cs = getComputedStyle(el.resultsCard);
+    const avail = el.resultsCard.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    const gap = 10, minT = 76, maxT = 260;
+    const perRow = Math.max(1, Math.min(state.cols, Math.floor((avail + gap) / (minT + gap))));
+    el.grid.style.gridTemplateColumns = 'repeat(' + perRow + ', minmax(0, 1fr))';
+    el.grid.style.maxWidth = (perRow * maxT + (perRow - 1) * gap) + 'px';
+  }
+
+  function renderPreview() {
+    const has = !!state.img;
+    const slices = has ? computeSlices() : [];
+    updateUpHint(slices);
+    el.resultTitle.textContent = 'Hasil: ' + slices.length + ' potongan';
+    el.grid.hidden = !has;
+    el.resultEmpty.hidden = has;
+    if (!has) { el.resultMeta.textContent = ''; return; }
+
+    if (el.grid.children.length !== slices.length) {
+      el.grid.textContent = '';
+      slices.forEach(s => {
+        const f = document.createElement('figure');
+        f.className = 'tile';
+        const cv = document.createElement('canvas');
+        const cap = document.createElement('figcaption');
+        cap.className = 'tile-n'; cap.textContent = s.i + 1;
+        f.append(cv, cap);
+        el.grid.appendChild(f);
+      });
+    }
+    applyResultGrid();
+    slices.forEach((s, i) => drawThumb(el.grid.children[i].firstChild, s));
+
+    const same = slices.every(s => s.w === slices[0].w && s.h === slices[0].h);
+    el.resultMeta.textContent = 'Gambar asli ' + state.w + ' × ' + state.h + ' px' +
+      (same ? '. Tiap potongan ' + slices[0].w + ' × ' + slices[0].h + ' px.' : '. Ukuran potongan mengikuti posisi garis.');
+
+    if (!el.chipsBox.hidden && el.chips.children.length !== slices.length) buildChips(slices.length);
+  }
+
+  /* ---------- Loading an image ---------- */
+  async function decodeFile(file) {
+    if (window.createImageBitmap) {
+      try {
+        const bmp = await createImageBitmap(file);
+        return { src: bmp, w: bmp.width, h: bmp.height };
+      } catch (_) { /* fall through to FileReader */ }
+    }
+    const dataUrl = await new Promise((res, rej) => {
+      const fr = new FileReader();
+      fr.onload = () => res(fr.result);
+      fr.onerror = () => rej(fr.error);
+      fr.readAsDataURL(file);
+    });
+    const img = new Image();
+    await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = dataUrl; });
+    return { src: img, w: img.naturalWidth, h: img.naturalHeight };
+  }
+
+  const closeSrc = s => { try { if (s && s.close) s.close(); } catch (_) {} };
+
+  const rgbToHex = ([r, g, b]) => '#' + [r, g, b].map(v => Math.max(0, Math.min(255, v | 0)).toString(16).padStart(2, '0')).join('');
+  const hexToRgb = hex => {
+    const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex || '');
+    return m ? [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16)] : [255, 255, 255];
+  };
+  function sampleCornerColor() {
+    if (!state.prev) return [255, 255, 255];
+    const c = state.prev, ctx = c.getContext('2d');
+    const pts = [[1, 1], [c.width - 2, 1], [1, c.height - 2], [c.width - 2, c.height - 2]];
+    let r = 0, g = 0, b = 0, n = 0;
+    for (const [x, y] of pts) {
+      try {
+        const d = ctx.getImageData(Math.max(0, x), Math.max(0, y), 1, 1).data;
+        r += d[0]; g += d[1]; b += d[2]; n++;
+      } catch (_) {}
+    }
+    return n ? [Math.round(r / n), Math.round(g / n), Math.round(b / n)] : [255, 255, 255];
+  }
+  function repaintFromSource(source) {
+    const w = state.w, h = state.h;
+    const k = Math.min(1, 1600 / Math.max(w, h));
+    const prev = document.createElement('canvas');
+    prev.width = Math.max(1, Math.round(w * k));
+    prev.height = Math.max(1, Math.round(h * k));
+    prev.getContext('2d').drawImage(source, 0, 0, prev.width, prev.height);
+    state.prev = prev;
+    el.pic.width = prev.width; el.pic.height = prev.height;
+    el.pic.getContext('2d').drawImage(prev, 0, 0);
+  }
+  async function applyBgRemoval(setLbl) {
+    if (!state.orig) return;
+    setLbl('Memproses…');
+    const w = state.w, h = state.h;
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    const ctx = c.getContext('2d', { willReadFrequently: true });
+    ctx.drawImage(state.orig, 0, 0, w, h);
+    await sleep(0);
+    const imgData = ctx.getImageData(0, 0, w, h);
+    const d = imgData.data;
+    const [br, bg, bb] = hexToRgb(el.bgColor.value);
+    const tol = clamp(parseInt(el.bgTol.value, 10) || 20, 1, 100);
+    const maxDist = 441.7; // sqrt(3 * 255^2)
+    const hardT = (tol / 100) * maxDist;
+    const featherT = Math.max(6, hardT * 0.35);
+    for (let i = 0; i < d.length; i += 4) {
+      const dr = d[i] - br, dg = d[i + 1] - bg, db = d[i + 2] - bb;
+      const dist = Math.sqrt(dr * dr + dg * dg + db * db);
+      if (dist <= hardT) d[i + 3] = 0;
+      else if (dist <= hardT + featherT) d[i + 3] = Math.round(d[i + 3] * (dist - hardT) / featherT);
+    }
+    ctx.putImageData(imgData, 0, 0);
+    await sleep(0);
+    let cleared = 0;
+    for (let i = 3; i < d.length; i += 4) if (d[i] === 0) cleared++;
+    const clearedRatio = cleared / (d.length / 4);
+    setLbl('Menyiapkan pratinjau…');
+
+    if (state.img && state.img !== state.orig) closeSrc(state.img);
+    state.img = c;
+    state.bgRemoved = true;
+    repaintFromSource(c);
+    if (state.fmt !== 'png') { state.fmt = 'png'; if (el.fmt) el.fmt.value = 'png'; }
+    el.bgReset.hidden = false;
+    el.bgHint.hidden = false;
+    renderPreview();
+    if (clearedRatio > 0.9) {
+      toast('Sebagian besar gambar ikut terhapus. Coba turunkan Toleransi, atau pakai "Klik di Gambar" untuk pilih warna latar yang lebih tepat.', 'error');
+    } else {
+      toast('Background dihapus. Geser toleransi lalu terapkan lagi kalau hasilnya kurang pas.');
+    }
+  }
+
+  async function loadFile(file) {
+    const okType = /^image\/(png|jpe?g|webp)$/i.test(file.type) || !file.type;
+    if (!okType) { toast(MSG.type, 'error'); return; }
+    if (file.size > MAX_FILE) { toast(MSG.big, 'error'); return; }
+
+    let dec;
+    try { dec = await decodeFile(file); }
+    catch (e) { console.error(e); toast(MSG.type, 'error'); return; }
+
+    const { src, w, h } = dec;
+    if (!w || !h) { closeSrc(src); toast(MSG.type, 'error'); return; }
+    if (w * h > MAX_PIXELS) { closeSrc(src); toast(MSG.big, 'error'); return; }
+
+    let prev;
+    try {
+      const k = Math.min(1, 1600 / Math.max(w, h));
+      prev = document.createElement('canvas');
+      prev.width = Math.max(1, Math.round(w * k));
+      prev.height = Math.max(1, Math.round(h * k));
+      const ctx = prev.getContext('2d');
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(src, 0, 0, prev.width, prev.height);
+    } catch (e) {
+      console.error(e); closeSrc(src); toast(MSG.big, 'error'); return;
+    }
+
+    closeSrc(state.img !== state.orig ? state.img : null);
+    closeSrc(state.orig);
+    Object.assign(state, { img: src, orig: src, w, h, prev, kx: prev.width / w, ky: prev.height / h, name: file.name || 'gambar', bgRemoved: false });
+
+    el.pic.width = prev.width;
+    el.pic.height = prev.height;
+    el.pic.getContext('2d').drawImage(prev, 0, 0);
+
+    el.empty.hidden = true;
+    el.editor.hidden = false;
+    el.change.hidden = false;
+
+    if (el.bgColor) el.bgColor.value = rgbToHex(sampleCornerColor());
+    if (el.bgReset) el.bgReset.hidden = true;
+    if (el.bgHint) el.bgHint.hidden = true;
+
+    state.v = evenLines(state.cols); state.hh = evenLines(state.rows); state.dirty = false;
+    syncUI();
+    layoutStage();
+    buildOverlay();
+    renderPreview();
+    refreshLocks();
+  }
+
+  // Upload buttons are <label for="file">, so the browser opens the picker natively.
+  [el.upload, el.change].forEach(l => l.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.file.click(); }
+  }));
+  el.file.addEventListener('change', async () => {
+    const f = el.file.files && el.file.files[0];
+    if (f) await loadFile(f);
+    el.file.value = '';
+  });
+  window.addEventListener('paste', e => {
+    const files = e.clipboardData ? Array.from(e.clipboardData.files || []) : [];
+    const f = files.find(x => x.type && x.type.indexOf('image/') === 0);
+    if (f) { e.preventDefault(); loadFile(f); }
+  });
+
+  /* Drag & drop */
+  let dragDepth = 0;
+  const hasFiles = e => e.dataTransfer && Array.from(e.dataTransfer.types || []).includes('Files');
+  window.addEventListener('dragenter', e => { if (!hasFiles(e)) return; e.preventDefault(); dragDepth++; document.body.classList.add('dropping'); });
+  window.addEventListener('dragover', e => { if (hasFiles(e)) e.preventDefault(); });
+  window.addEventListener('dragleave', e => {
+    if (!hasFiles(e)) return;
+    dragDepth = Math.max(0, dragDepth - 1);
+    if (!dragDepth) document.body.classList.remove('dropping');
+  });
+  window.addEventListener('drop', e => {
+    if (!hasFiles(e)) return;
+    e.preventDefault();
+    dragDepth = 0; document.body.classList.remove('dropping');
+    const files = Array.from((e.dataTransfer && e.dataTransfer.files) || []);
+    const pdfs = files.filter(isPdf);
+    if (pdfs.length) addPdfFiles(pdfs);
+    else if (files[0]) loadFile(files[0]);
+  });
+
+  /* ---------- Controls ---------- */
+  $$('.preset').forEach(b => b.addEventListener('click', () => {
+    const p = b.dataset.preset;
+    state.preset = p;
+    if (p === 'custom') { syncUI(); return; }
+    const [c, r] = PRESETS[p];
+    setGrid(c, r);
+  }));
+
+  $$('[data-step]').forEach(b => b.addEventListener('click', () => {
+    const [k, d] = b.dataset.step.split(':');
+    const v = clamp(state[k] + Number(d), 1, 10);
+    state.preset = 'custom';
+    setGrid(k === 'cols' ? v : state.cols, k === 'rows' ? v : state.rows);
+  }));
+
+  el.overlap.addEventListener('input', () => {
+    const n = parseInt(el.overlap.value, 10);
+    state.overlap = clamp(Number.isFinite(n) ? n : 0, 0, 1000);
+    updateOverlay();
+    schedulePreview();
+  });
+  el.overlap.addEventListener('blur', () => { el.overlap.value = state.overlap; });
+  el.keep.addEventListener('change', () => { state.keep = el.keep.checked; });
+  el.fmt.addEventListener('change', () => { state.fmt = el.fmt.value; });
+
+  el.bgTol.addEventListener('input', () => { el.bgTolVal.textContent = el.bgTol.value; });
+  el.bgFileBtn.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.bgFile.click(); }
+  });
+  el.bgFile.addEventListener('change', async () => {
+    const f = el.bgFile.files && el.bgFile.files[0];
+    if (f) await loadFile(f);
+    el.bgFile.value = '';
+  });
+  el.bgEyedrop.addEventListener('click', () => {
+    if (!state.img) return;
+    setBgPicking(!bgPicking);
+    if (bgPicking) toast('Klik pada bagian gambar yang warnanya mau dihapus.');
+  });
+  el.bgPick.addEventListener('click', () => { el.bgColor.value = rgbToHex(sampleCornerColor()); });
+  el.bgApply.addEventListener('click', () => runExport(el.bgApply, applyBgRemoval));
+  el.bgReset.addEventListener('click', () => {
+    if (!state.bgRemoved || !state.orig) return;
+    if (state.img !== state.orig) closeSrc(state.img);
+    state.img = state.orig;
+    state.bgRemoved = false;
+    repaintFromSource(state.orig);
+    el.bgReset.hidden = true;
+    el.bgHint.hidden = true;
+    renderPreview();
+    toast('Gambar asli dikembalikan.');
+  });
+
+  try {
+    const ok = document.createElement('canvas').toDataURL('image/webp').indexOf('data:image/webp') === 0;
+    if (!ok) {
+      const o = el.fmt.querySelector('option[value="webp"]');
+      o.disabled = true; o.textContent = 'WEBP (tidak didukung)';
+    }
+  } catch (_) {}
+
+  /* ---------- Upscale ---------- */
+  const tooBig = (w, h) => w > 16384 || h > 16384 || w * h > 64e6;
+
+  function largestOut(slices) {
+    return {
+      w: Math.max(...slices.map(s => s.w)) * state.scale,
+      h: Math.max(...slices.map(s => s.h)) * state.scale
+    };
+  }
+
+  function exceedsLimit() {
+    if (!state.img || state.scale === 1) return false;
+    const m = largestOut(computeSlices());
+    return tooBig(m.w, m.h);
+  }
+
+  function updateUpHint(slices) {
+    if (state.scale === 1) { el.upHint.hidden = true; return; }
+    el.upHint.hidden = false;
+    if (!slices || !slices.length) {
+      el.upHint.dataset.warn = 'false';
+      el.upHint.textContent = 'Potongan akan diperbesar ' + state.scale + '× saat download.';
+      return;
+    }
+    const m = largestOut(slices);
+    const bad = tooBig(m.w, m.h);
+    el.upHint.dataset.warn = String(bad);
+    el.upHint.textContent = bad
+      ? 'Terlalu besar untuk diproses browser. Kurangi angka upscale.'
+      : 'Potongan terbesar menjadi ' + m.w + ' × ' + m.h + ' px. Proses download bisa lebih lama.';
+  }
+
+  function sharpen(ctx, w, h, a) {
+    const img = ctx.getImageData(0, 0, w, h);
+    const src = img.data;
+    const out = new Uint8ClampedArray(src);
+    const c = 1 + 4 * a, stride = w * 4;
+    for (let y = 1; y < h - 1; y++) {
+      let i = y * stride + 4;
+      for (let x = 1; x < w - 1; x++, i += 4) {
+        for (let k = 0; k < 3; k++) {
+          const j = i + k;
+          out[j] = c * src[j] - a * (src[j - 4] + src[j + 4] + src[j - stride] + src[j + stride]);
+        }
+      }
+    }
+    ctx.putImageData(new ImageData(out, w, h), 0, 0);
+  }
+
+  el.scale.addEventListener('change', () => {
+    state.scale = Number(el.scale.value) || 1;
+    updateUpHint(state.img ? computeSlices() : []);
+  });
+
+  /* ---------- Export ---------- */
+  function drawSlice(s, fmt) {
+    const k = state.scale;
+    const W = s.w * k, H = s.h * k;
+    const c = document.createElement('canvas');
+    c.width = W; c.height = H;
+    const ctx = c.getContext('2d');
+    if (fmt !== 'png') { ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H); }
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(state.img, s.x, s.y, s.w, s.h, 0, 0, W, H);
+    if (k > 1 && W * H <= SHARP_MAX_PX) sharpen(ctx, W, H, SHARP[k] || 0.3);
+    return c;
+  }
+
+  async function renderSlice(s) {
+    const fmt = state.fmt;
+    const c = drawSlice(s, fmt);
+    const blob = await new Promise((res, rej) =>
+      c.toBlob(b => b ? res(b) : rej(new Error('blob')), MIME[fmt], fmt === 'png' ? undefined : 0.92));
+    c.width = c.height = 0;
+    return { blob, ext: EXT[blob.type] || 'png' };
+  }
+
+  const sliceName = (i, total, ext) => 'slice-' + String(i + 1).padStart(Math.max(2, String(total).length), '0') + '.' + ext;
+
+  async function buildZip(setLbl) {
+    if (!window.JSZip) throw new Error('lib');
+    const slices = computeSlices();
+    const zip = new window.JSZip();
+    for (const s of slices) {
+      setLbl('Membuat ' + (s.i + 1) + '/' + slices.length);
+      const { blob, ext } = await renderSlice(s);
+      zip.file(sliceName(s.i, slices.length, ext), blob);
+      await sleep(0);
+    }
+    setLbl('Mengemas…');
+    return zip.generateAsync({ type: 'blob', compression: 'STORE' });
+  }
+
+  async function buildPdf(setLbl) {
+    if (!window.jspdf) throw new Error('lib');
+    const { jsPDF } = window.jspdf;
+    const slices = computeSlices();
+    const asPng = state.fmt === 'png';
+    const maxW = Math.max(...slices.map(s => s.w)) * state.scale, maxH = Math.max(...slices.map(s => s.h)) * state.scale;
+    let pdf = null;
+    for (const s of slices) {
+      setLbl('Membuat ' + (s.i + 1) + '/' + slices.length);
+      const c = drawSlice(s, asPng ? 'png' : 'jpg');
+      const data = c.toDataURL(asPng ? 'image/png' : 'image/jpeg', 0.95);
+      c.width = c.height = 0;
+      const sw = s.w * state.scale, sh = s.h * state.scale;
+      let pw = sw, ph = sh, x = 0, y = 0, iw = sw, ih = sh;
+      if (!state.keep) {
+        pw = maxW; ph = maxH;
+        const k = Math.min(pw / sw, ph / sh);
+        iw = sw * k; ih = sh * k;
+        x = (pw - iw) / 2; y = (ph - ih) / 2;
+      }
+      const orient = pw >= ph ? 'l' : 'p';
+      if (!pdf) pdf = new jsPDF({ orientation: orient, unit: 'px', format: [pw, ph], compress: true, hotfixes: ['px_scaling'] });
+      else pdf.addPage([pw, ph], orient);
+      pdf.addImage(data, asPng ? 'PNG' : 'JPEG', x, y, iw, ih, undefined, 'FAST');
+      await sleep(0);
+    }
+    setLbl('Mengemas…');
+    return pdf.output('blob');
+  }
+
+  async function buildPdfPerSlice(setLbl) {
+    if (!window.jspdf || !window.JSZip) throw new Error('lib');
+    const { jsPDF } = window.jspdf;
+    const slices = computeSlices();
+    const asPng = state.fmt === 'png';
+    const maxW = Math.max(...slices.map(s => s.w)) * state.scale, maxH = Math.max(...slices.map(s => s.h)) * state.scale;
+    const zip = new window.JSZip();
+    for (const s of slices) {
+      setLbl('Membuat ' + (s.i + 1) + '/' + slices.length);
+      const c = drawSlice(s, asPng ? 'png' : 'jpg');
+      const data = c.toDataURL(asPng ? 'image/png' : 'image/jpeg', 0.95);
+      c.width = c.height = 0;
+      const sw = s.w * state.scale, sh = s.h * state.scale;
+      let pw = sw, ph = sh, x = 0, y = 0, iw = sw, ih = sh;
+      if (!state.keep) {
+        pw = maxW; ph = maxH;
+        const k = Math.min(pw / sw, ph / sh);
+        iw = sw * k; ih = sh * k;
+        x = (pw - iw) / 2; y = (ph - ih) / 2;
+      }
+      const orient = pw >= ph ? 'l' : 'p';
+      const pg = new jsPDF({ orientation: orient, unit: 'px', format: [pw, ph], compress: true, hotfixes: ['px_scaling'] });
+      pg.addImage(data, asPng ? 'PNG' : 'JPEG', x, y, iw, ih, undefined, 'FAST');
+      zip.file(sliceName(s.i, slices.length, 'pdf'), pg.output('blob'));
+      await sleep(0);
+    }
+    setLbl('Mengemas…');
+    return zip.generateAsync({ type: 'blob', compression: 'STORE' });
+  }
+
+  const locks = () => $$('.dl-lock');
+  function refreshLocks() {
+    const off = !state.img || state.busy;
+    locks().forEach(b => { b.disabled = off; });
+    refreshMerge();
+  }
+
+  async function runExport(btn, fn, noImage) {
+    if (state.busy || (!noImage && !state.img)) return;
+    if (!noImage && exceedsLimit()) { toast(MSG.up, 'error'); return; }
+    const lbl = btn.querySelector('.lbl');
+    const old = lbl ? lbl.textContent : '';
+    const setLbl = t => { if (lbl) lbl.textContent = t; };
+    state.busy = true; refreshLocks();
+    try { await fn(setLbl); }
+    catch (e) { console.error(e); toast(MSG.fail, 'error'); }
+    finally { if (lbl) lbl.textContent = old; state.busy = false; refreshLocks(); }
+  }
+
+  async function saveAndNotify(filename, blob, okMsg) {
+    const r = await saveFile(filename, blob);
+    if (r !== 'saved') return;
+    let extra = '';
+    if (!okMsg && state.img && state.scale > 1) {
+      const m = largestOut(computeSlices());
+      extra = ' Ukuran potongan terbesar ' + m.w + ' × ' + m.h + ' px.';
+    }
+    toast(okMsg || ('Download dimulai: ' + filename + '.' + extra));
+  }
+
+  el.zip.addEventListener('click', () => runExport(el.zip, async setLbl => {
+    const blob = await buildZip(setLbl);
+    await saveAndNotify('sliced-images.zip', blob);
+  }));
+
+  el.imgBtn.addEventListener('click', () => {
+    const open = el.imgOptions.hidden;
+    el.imgOptions.hidden = !open;
+    el.imgBtn.setAttribute('aria-expanded', String(open));
+    if (!open) el.chipsBox.hidden = true;
+    if (open) { el.pdfOptions.hidden = true; el.pdf.setAttribute('aria-expanded', 'false'); }
+  });
+
+  el.pdf.addEventListener('click', () => {
+    const open = el.pdfOptions.hidden;
+    el.pdfOptions.hidden = !open;
+    el.pdf.setAttribute('aria-expanded', String(open));
+    if (open) {
+      el.imgOptions.hidden = true; el.imgBtn.setAttribute('aria-expanded', 'false'); el.chipsBox.hidden = true;
+    }
+  });
+
+  el.pdfOne.addEventListener('click', () => runExport(el.pdfOne, async setLbl => {
+    const blob = await buildPdf(setLbl);
+    await saveAndNotify('sliced-images.pdf', blob);
+  }));
+
+  el.pdfEach.addEventListener('click', () => runExport(el.pdfEach, async setLbl => {
+    const blob = await buildPdfPerSlice(setLbl);
+    await saveAndNotify('sliced-images-pdf.zip', blob, 'Tiap potongan sudah dikemas jadi PDF sendiri dalam 1 file ZIP.');
+  }));
+
+  el.all.addEventListener('click', () => runExport(el.all, async setLbl => {
+    await capPromise;
+    const slices = computeSlices();
+    if (downloadsCap && slices.length > 1) {
+      const blob = await buildZip(setLbl);
+      await saveAndNotify('sliced-images.zip', blob, 'Unduhan ganda dibatasi di sini, jadi semua potongan dikemas dalam ZIP.');
+      return;
+    }
+    for (const s of slices) {
+      setLbl('Mengunduh ' + (s.i + 1) + '/' + slices.length);
+      const { blob, ext } = await renderSlice(s);
+      const r = await saveFile(sliceName(s.i, slices.length, ext), blob);
+      if (r === 'declined') return;
+      await sleep(350);
+    }
+    toast('Semua potongan sudah diunduh.');
+  }));
+
+  function buildChips(n) {
+    el.chips.textContent = '';
+    for (let i = 0; i < n; i++) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'chip dl-lock';
+      b.textContent = i + 1;
+      b.setAttribute('aria-label', 'Download potongan ' + (i + 1));
+      b.dataset.i = i;
+      el.chips.appendChild(b);
+    }
+    refreshLocks();
+  }
+
+  el.indiv.addEventListener('click', () => {
+    el.chipsBox.hidden = !el.chipsBox.hidden;
+    if (!el.chipsBox.hidden) buildChips(state.cols * state.rows);
+  });
+
+  el.chips.addEventListener('click', e => {
+    const b = e.target.closest('.chip');
+    if (!b) return;
+    const i = Number(b.dataset.i);
+    runExport(b, async () => {
+      const slices = computeSlices();
+      const s = slices[i];
+      if (!s) return;
+      const { blob, ext } = await renderSlice(s);
+      await saveAndNotify(sliceName(i, slices.length, ext), blob);
+    });
+  });
+
+  /* ---------- Gabung PDF ---------- */
+  let pdfItems = [], pdfSeq = 0;
+  const isPdf = f => f.type === 'application/pdf' || /\.pdf$/i.test(f.name);
+  const fmtSize = b => b >= 1048576
+    ? (b / 1048576).toFixed(1).replace('.', ',') + ' MB'
+    : Math.max(1, Math.round(b / 1024)) + ' KB';
+  const ICONS = {
+    up: '<path d="M6 15l6-6 6 6"/>',
+    down: '<path d="M6 9l6 6 6-6"/>',
+    del: '<path d="M6 6l12 12M18 6L6 18"/>'
+  };
+  const ACT_LABEL = { up: 'Naikkan', down: 'Turunkan', del: 'Hapus' };
+
+  async function addPdfBytes(name, bytes) {
+    if (!window.PDFLib) throw new Error('lib');
+    const doc = await window.PDFLib.PDFDocument.load(bytes, { ignoreEncryption: true });
+    pdfItems.push({ id: ++pdfSeq, name, bytes, pages: doc.getPageCount(), size: bytes.byteLength });
+  }
+
+  async function addPdfFiles(files) {
+    const list = Array.from(files).filter(isPdf);
+    if (!list.length) { toast(MSG.pdfType, 'error'); return; }
+    let ok = 0, bad = 0;
+    for (const f of list) {
+      try { await addPdfBytes(f.name, await f.arrayBuffer()); ok++; }
+      catch (e) { console.error(e); bad++; }
+    }
+    renderPdfList();
+    if (bad) toast(MSG.pdfRead, 'error');
+    else toast(ok + ' PDF ditambahkan ke daftar.');
+  }
+
+  const isImg = f => /^image\/(png|jpe?g|webp)$/i.test(f.type) || (!f.type && /\.(png|jpe?g|webp)$/i.test(f.name));
+
+  /* Bangun 1 file PDF (bisa banyak halaman) dari daftar file gambar, urut sesuai array */
+  async function buildPdfFromImages(files, setLbl) {
+    if (!window.PDFLib) throw new Error('lib');
+    const { PDFDocument } = window.PDFLib;
+    const doc = await PDFDocument.create();
+    for (let i = 0; i < files.length; i++) {
+      if (setLbl) setLbl('Memproses gambar ' + (i + 1) + '/' + files.length);
+      const { src, w, h } = await decodeFile(files[i]);
+      try {
+        const c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        c.getContext('2d').drawImage(src, 0, 0, w, h);
+        const blob = await new Promise((res, rej) =>
+          c.toBlob(b => b ? res(b) : rej(new Error('blob')), 'image/png'));
+        const bytes = new Uint8Array(await blob.arrayBuffer());
+        const png = await doc.embedPng(bytes);
+        const ptW = w * 0.75, ptH = h * 0.75; // px (96dpi) -> pt
+        const page = doc.addPage([ptW, ptH]);
+        page.drawImage(png, { x: 0, y: 0, width: ptW, height: ptH });
+      } finally { closeSrc(src); }
+      await sleep(0);
+    }
+    return doc.save();
+  }
+
+  async function addImageFiles(files) {
+    const list = Array.from(files).filter(isImg);
+    if (!list.length) { toast(MSG.type, 'error'); return; }
+    let ok = 0, bad = 0;
+    for (const f of list) {
+      try {
+        const bytes = await buildPdfFromImages([f]);
+        await addPdfBytes(f.name.replace(/\.[^.]+$/, '') + '.pdf', bytes);
+        ok++;
+      } catch (e) { console.error(e); bad++; }
+    }
+    renderPdfList();
+    if (bad) toast('Beberapa gambar gagal diproses.', 'error');
+    if (ok) toast(ok + ' gambar dijadikan PDF dan ditambahkan ke daftar.');
+  }
+
+  function iconBtn(act, i, disabled, name) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'icon-btn';
+    b.dataset.act = act; b.dataset.i = i; b.disabled = disabled;
+    b.setAttribute('aria-label', ACT_LABEL[act] + ' ' + name);
+    b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICONS[act] + '</svg>';
+    return b;
+  }
+
+  function renderPdfList() {
+    el.pdfList.textContent = '';
+    pdfItems.forEach((it, i) => {
+      const li = document.createElement('li');
+      li.className = 'pdf-item';
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+      const nm = document.createElement('div');
+      nm.className = 'name'; nm.textContent = (i + 1) + '. ' + it.name; nm.title = it.name;
+      const inf = document.createElement('div');
+      inf.className = 'info'; inf.textContent = it.pages + ' halaman, ' + fmtSize(it.size);
+      meta.append(nm, inf);
+      li.append(meta,
+        iconBtn('up', i, i === 0, it.name),
+        iconBtn('down', i, i === pdfItems.length - 1, it.name),
+        iconBtn('del', i, false, it.name));
+      el.pdfList.appendChild(li);
+    });
+    const totalPages = pdfItems.reduce((n, x) => n + x.pages, 0);
+    el.pdfEmpty.hidden = pdfItems.length > 0;
+    el.pdfSummary.hidden = pdfItems.length === 0;
+    el.pdfSummary.textContent = 'Total ' + pdfItems.length + ' file, ' + totalPages + ' halaman.';
+    el.clearPdf.hidden = pdfItems.length === 0;
+    refreshMerge();
+  }
+
+  function refreshMerge() {
+    el.merge.disabled = state.busy || pdfItems.length < 2;
+    el.addSlices.disabled = state.busy || !state.img;
+    el.clearPdf.disabled = state.busy;
+    el.fbSlices.disabled = state.busy || !state.img;
+    el.fbList.disabled = state.busy || pdfItems.length < 1;
+  }
+
+  el.pdfList.addEventListener('click', e => {
+    const b = e.target.closest('.icon-btn');
+    if (!b || state.busy) return;
+    const i = Number(b.dataset.i), act = b.dataset.act;
+    if (act === 'del') pdfItems.splice(i, 1);
+    else {
+      const j = act === 'up' ? i - 1 : i + 1;
+      if (j < 0 || j >= pdfItems.length) return;
+      [pdfItems[i], pdfItems[j]] = [pdfItems[j], pdfItems[i]];
+    }
+    renderPdfList();
+  });
+
+  el.clearPdf.addEventListener('click', () => { pdfItems = []; renderPdfList(); });
+
+  el.addPdf.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.pdfFile.click(); }
+  });
+  el.pdfFile.addEventListener('change', async () => {
+    const fs = el.pdfFile.files;
+    if (fs && fs.length) await addPdfFiles(fs);
+    el.pdfFile.value = '';
+  });
+
+  el.addImg.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.pdfImgFile.click(); }
+  });
+  el.pdfImgFile.addEventListener('change', async () => {
+    const fs = el.pdfImgFile.files;
+    if (fs && fs.length) await addImageFiles(fs);
+    el.pdfImgFile.value = '';
+  });
+
+  el.addSlices.addEventListener('click', () => runExport(el.addSlices, async setLbl => {
+    const blob = await buildPdf(setLbl);
+    const base = String(state.name || 'gambar').replace(/\.[^.]+$/, '');
+    await addPdfBytes('potongan-' + base + '.pdf', await blob.arrayBuffer());
+    renderPdfList();
+    toast('Hasil potongan ditambahkan ke daftar PDF.');
+  }));
+
+  async function mergePdfBytes(setLbl) {
+    if (!window.PDFLib) throw new Error('lib');
+    if (pdfItems.length === 1) return new Uint8Array(pdfItems[0].bytes.slice(0));
+    const { PDFDocument } = window.PDFLib;
+    const out = await PDFDocument.create();
+    for (let i = 0; i < pdfItems.length; i++) {
+      setLbl('Menggabung ' + (i + 1) + '/' + pdfItems.length);
+      const src = await PDFDocument.load(pdfItems[i].bytes, { ignoreEncryption: true });
+      const pages = await out.copyPages(src, src.getPageIndices());
+      pages.forEach(pg => out.addPage(pg));
+      await sleep(0);
+    }
+    setLbl('Mengemas…');
+    return out.save();
+  }
+
+  el.merge.addEventListener('click', () => runExport(el.merge, async setLbl => {
+    const bytes = await mergePdfBytes(setLbl);
+    await saveAndNotify('merged.pdf', new Blob([bytes], { type: 'application/pdf' }), 'PDF gabungan siap: merged.pdf');
+  }, true));
+
+  /* ---------- Flipbook ---------- */
+  const fb = {
+    pdf: null, n: 0, ratio: 0.707, t: 0, maxT: 0, mode: '', pageW: 0, pageH: 0,
+    leaves: [], canvases: [], rendered: new Set(), queue: [], rendering: false,
+    renderH: 0, gen: 0, timers: new Map(), sound: true
+  };
+  const PDFJS_BASE = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/';
+  let pdfjsPromise = null;
+
+  /* Suara buku dibuka: dibangkitkan sendiri (noise + filter), tidak perlu file audio */
+  try { const v = localStorage.getItem('fbSound'); if (v !== null) fb.sound = v === '1'; } catch (_) {}
+  let fbActx = null;
+  function fbUpdateSoundBtn() {
+    if (!el.fbSound) return;
+    el.fbSound.setAttribute('aria-pressed', fb.sound ? 'true' : 'false');
+    el.fbSound.setAttribute('aria-label', 'Suara buku dibuka: ' + (fb.sound ? 'aktif' : 'nonaktif'));
+    const on = el.fbSound.querySelector('.ic-on'), off = el.fbSound.querySelector('.ic-off');
+    if (on) on.hidden = !fb.sound;
+    if (off) off.hidden = fb.sound;
+  }
+  function fbPlayFlip(vol) {
+    if (!fb.sound) return;
+    try {
+      if (!fbActx) fbActx = new (window.AudioContext || window.webkitAudioContext)();
+      if (fbActx.state === 'suspended') fbActx.resume().catch(() => {});
+      const ctx = fbActx, dur = 0.26, now = ctx.currentTime;
+      const rate = ctx.sampleRate;
+      const buf = ctx.createBuffer(1, Math.floor(rate * dur), rate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < data.length; i++) {
+        const t = i / data.length;
+        data[i] = (Math.random() * 2 - 1) * Math.pow(1 - t, 2.4);
+      }
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      const band = ctx.createBiquadFilter();
+      band.type = 'bandpass';
+      band.frequency.setValueAtTime(2000, now);
+      band.frequency.exponentialRampToValueAtTime(600, now + dur);
+      band.Q.value = 0.6;
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.linearRampToValueAtTime((vol == null ? 1 : vol) * 0.45, now + 0.012);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+      src.connect(band).connect(gain).connect(ctx.destination);
+      src.start(now);
+      src.stop(now + dur + 0.02);
+    } catch (_) {}
+  }
+  if (el.fbSound) {
+    fbUpdateSoundBtn();
+    el.fbSound.addEventListener('click', () => {
+      fb.sound = !fb.sound;
+      try { localStorage.setItem('fbSound', fb.sound ? '1' : '0'); } catch (_) {}
+      fbUpdateSoundBtn();
+      if (fb.sound) fbPlayFlip(0.6);
+    });
+  }
+
+  function loadPdfJs() {
+    if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+    if (!pdfjsPromise) {
+      pdfjsPromise = new Promise((res, rej) => {
+        const sc = document.createElement('script');
+        sc.src = PDFJS_BASE + 'pdf.min.js';
+        sc.onload = () => {
+          try { window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_BASE + 'pdf.worker.min.js'; res(window.pdfjsLib); }
+          catch (e) { pdfjsPromise = null; rej(e); }
+        };
+        sc.onerror = () => { pdfjsPromise = null; rej(new Error('lib')); };
+        document.head.appendChild(sc);
+      });
+    }
+    return pdfjsPromise;
+  }
+
+  const fbCurrentPage = () => fb.mode === 'double' ? (fb.t === 0 ? 0 : 2 * fb.t - 1) : fb.t;
+
+  function fbFace(kind, pageIndex) {
+    const f = document.createElement('div');
+    f.className = 'fb-face ' + kind;
+    if (pageIndex !== null) {
+      const c = document.createElement('canvas');
+      f.appendChild(c);
+      fb.canvases[pageIndex] = c;
+    }
+    return f;
+  }
+
+  function fbBuild() {
+    el.fbBook.textContent = '';
+    fb.leaves = [];
+    fb.canvases = new Array(fb.n).fill(null);
+    fb.rendered.clear();
+    fb.timers.forEach(t => clearTimeout(t));
+    fb.timers.clear();
+    const dbl = fb.mode === 'double';
+    el.fbBook.className = 'fb-book ' + (dbl ? 'double' : 'single');
+    const L = dbl ? Math.ceil(fb.n / 2) : fb.n;
+    for (let k = 0; k < L; k++) {
+      const leaf = document.createElement('div');
+      leaf.className = 'fb-leaf';
+      leaf._flipped = false;
+      leaf.appendChild(fbFace('front', dbl ? 2 * k : k));
+      if (dbl) leaf.appendChild(fbFace('back', 2 * k + 1 < fb.n ? 2 * k + 1 : null));
+      el.fbBook.appendChild(leaf);
+      fb.leaves.push(leaf);
+    }
+    fb.maxT = dbl ? (fb.n % 2 === 0 ? L : L - 1) : fb.n - 1;
+  }
+
+  function fbZ(k) {
+    const leaf = fb.leaves[k];
+    if (leaf) leaf.style.zIndex = leaf._flipped ? k + 1 : fb.leaves.length - k;
+  }
+
+  function fbApply(instant) {
+    const t = fb.t, dbl = fb.mode === 'double';
+    if (instant) el.fbBook.classList.add('no-anim');
+    fb.leaves.forEach((leaf, k) => {
+      const flipped = k < t;
+      if (leaf._flipped !== flipped) {
+        leaf._flipped = flipped;
+        leaf.classList.toggle('flipped', flipped);
+        if (!instant) {
+          leaf.style.zIndex = 1000 + (flipped ? k : fb.leaves.length - k);
+          clearTimeout(fb.timers.get(k));
+          fb.timers.set(k, setTimeout(() => { fb.timers.delete(k); fbZ(k); }, 850));
+        }
+      }
+      if (instant || !fb.timers.has(k)) fbZ(k);
+    });
+    let tx = 0;
+    if (dbl) {
+      if (t === 0) tx = -fb.pageW / 2;
+      else if (t === fb.maxT && fb.n % 2 === 0) tx = fb.pageW / 2;
+    }
+    el.fbBook.style.transform = 'translateX(' + tx + 'px)';
+    if (instant) { void el.fbBook.offsetWidth; el.fbBook.classList.remove('no-anim'); }
+  }
+
+  function fbUpdateUI() {
+    if (!fb.pdf) return;
+    let label;
+    if (fb.mode === 'double') {
+      const l = fb.t === 0 ? null : 2 * fb.t;
+      const r = 2 * fb.t + 1 <= fb.n ? 2 * fb.t + 1 : null;
+      label = (l && r) ? 'Halaman ' + l + '–' + r + ' dari ' + fb.n : 'Halaman ' + (l || r) + ' dari ' + fb.n;
+    } else {
+      label = 'Halaman ' + (fb.t + 1) + ' dari ' + fb.n;
+    }
+    el.fbInd.textContent = label;
+    el.fbFirst.disabled = el.fbPrev.disabled = fb.t <= 0;
+    el.fbNext.disabled = el.fbLast.disabled = fb.t >= fb.maxT;
+  }
+
+  function fbWanted() {
+    const dbl = fb.mode === 'double';
+    const lo = dbl ? 2 * fb.t - 5 : fb.t - 3;
+    const hi = dbl ? 2 * fb.t + 5 : fb.t + 5;
+    return [Math.max(0, lo), Math.min(fb.n - 1, hi)];
+  }
+
+  function fbEnsureRendered() {
+    if (!fb.pdf) return;
+    const [lo, hi] = fbWanted();
+    const center = fb.mode === 'double' ? 2 * fb.t - 0.5 : fb.t;
+    Array.from(fb.rendered).forEach(i => {
+      if (i < lo || i > hi) {
+        const c = fb.canvases[i];
+        if (c) { c.width = 0; c.height = 0; }
+        fb.rendered.delete(i);
+      }
+    });
+    const need = [];
+    for (let i = lo; i <= hi; i++) if (!fb.rendered.has(i) && fb.canvases[i]) need.push(i);
+    need.sort((x, y) => Math.abs(x - center) - Math.abs(y - center));
+    fb.queue = need;
+    fbPump();
+  }
+
+  async function fbPump() {
+    if (fb.rendering) return;
+    fb.rendering = true;
+    const gen = fb.gen;
+    try {
+      while (fb.queue.length && gen === fb.gen) {
+        const i = fb.queue.shift();
+        if (fb.rendered.has(i)) continue;
+        await fbRenderPage(i, gen);
+      }
+    } catch (e) { console.error(e); }
+    finally {
+      fb.rendering = false;
+      if (fb.pdf && fb.queue.length && gen !== fb.gen) fbPump();
+    }
+  }
+
+  async function fbRenderPage(i, gen) {
+    const canvas = fb.canvases[i];
+    if (!canvas) return;
+    const page = await fb.pdf.getPage(i + 1);
+    const vp0 = page.getViewport({ scale: 1 });
+    const vp = page.getViewport({ scale: fb.renderH / vp0.height });
+    const tmp = document.createElement('canvas');
+    tmp.width = Math.max(1, Math.floor(vp.width));
+    tmp.height = Math.max(1, Math.floor(vp.height));
+    await page.render({ canvasContext: tmp.getContext('2d'), viewport: vp }).promise;
+    if (gen !== fb.gen) return;
+    canvas.width = tmp.width;
+    canvas.height = tmp.height;
+    canvas.getContext('2d').drawImage(tmp, 0, 0);
+    fb.rendered.add(i);
+    tmp.width = tmp.height = 0;
+  }
+
+  function fbLayout() {
+    if (!fb.pdf) return;
+    const availW = el.fbView.clientWidth;
+    if (availW < 100) return;
+    const full = !!document.fullscreenElement;
+    const maxH = full ? Math.max(280, window.innerHeight - 150) : clamp(window.innerHeight * 0.7, 280, 720);
+    const mode = availW < 640 ? 'single' : 'double';
+    const per = mode === 'double' ? 2 : 1;
+    let pw = Math.min(availW / per, maxH * fb.ratio);
+    pw = Math.floor(Math.max(120, pw));
+    const ph = Math.floor(pw / fb.ratio);
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const rh = clamp(Math.round(ph * dpr), 500, 1400);
+
+    let rebuilt = false;
+    if (mode !== fb.mode || !fb.leaves.length) {
+      const cur = fb.mode ? fbCurrentPage() : 0;
+      fb.mode = mode;
+      fbBuild();
+      fb.t = clamp(mode === 'double' ? Math.ceil(cur / 2) : cur, 0, fb.maxT);
+      rebuilt = true;
+    }
+    fb.pageW = pw; fb.pageH = ph;
+    el.fbBook.style.width = per * pw + 'px';
+    el.fbBook.style.height = ph + 'px';
+    fb.leaves.forEach(l => {
+      l.style.width = pw + 'px';
+      l.style.height = ph + 'px';
+      l.style.left = (mode === 'double' ? pw : 0) + 'px';
+    });
+
+    if (!fb.renderH || Math.abs(rh - fb.renderH) > fb.renderH * 0.25) {
+      fb.renderH = rh;
+      Array.from(fb.rendered).forEach(i => { const c = fb.canvases[i]; if (c) { c.width = 0; c.height = 0; } });
+      fb.rendered.clear();
+    }
+    fbApply(rebuilt || true);
+    fbEnsureRendered();
+    fbUpdateUI();
+  }
+
+  function fbGo(t) {
+    if (!fb.pdf) return;
+    t = clamp(t, 0, fb.maxT);
+    if (t === fb.t) return;
+    fb.t = t;
+    fbPlayFlip();
+    fbApply(false);
+    fbEnsureRendered();
+    fbUpdateUI();
+  }
+
+  function closeFlipbook() {
+    fb.gen++;
+    fb.queue = [];
+    if (fb.pdf) { try { fb.pdf.destroy(); } catch (_) {} }
+    fb.pdf = null; fb.leaves = []; fb.canvases = []; fb.mode = ''; fb.renderH = 0;
+    fb.rendered.clear();
+    fb.timers.forEach(t => clearTimeout(t));
+    fb.timers.clear();
+    el.fbBook.textContent = '';
+    el.fbStage.hidden = true;
+    el.fbEmpty.hidden = false;
+    if (document.fullscreenElement) { try { document.exitFullscreen(); } catch (_) {} }
+  }
+
+  async function openFlipbook(bytes, title) {
+    try {
+      const lib = await loadPdfJs();
+      const data = bytes instanceof Uint8Array ? bytes.slice() : new Uint8Array(bytes.slice(0));
+      const pdf = await lib.getDocument({ data }).promise;
+      if (pdf.numPages > 300) { try { pdf.destroy(); } catch (_) {} toast(MSG.fbMany, 'error'); return; }
+      const p1 = await pdf.getPage(1);
+      const vp = p1.getViewport({ scale: 1 });
+      closeFlipbook();
+      fb.pdf = pdf; fb.n = pdf.numPages; fb.ratio = vp.width / vp.height; fb.t = 0;
+      el.fbTitle.textContent = title + ', ' + fb.n + ' halaman';
+      el.fbTitle.title = title;
+      el.fbStage.hidden = false;
+      el.fbEmpty.hidden = true;
+      fbLayout();
+      el.fbStage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      el.fbStage.focus({ preventScroll: true });
+    } catch (e) {
+      console.error(e);
+      toast(MSG.fbRead, 'error');
+    }
+  }
+
+  /* Sumber flipbook */
+  el.fbPick.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.fbFile.click(); }
+  });
+  el.fbFile.addEventListener('change', async () => {
+    const f = el.fbFile.files && el.fbFile.files[0];
+    if (f) {
+      if (!isPdf(f)) toast(MSG.pdfType, 'error');
+      else await runExport(el.fbPick, async () => {
+        toast('Menyiapkan buku…');
+        await openFlipbook(await f.arrayBuffer(), f.name);
+      }, true);
+    }
+    el.fbFile.value = '';
+  });
+  el.fbImages.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.fbImgFile.click(); }
+  });
+  el.fbImgFile.addEventListener('change', async () => {
+    const fs = el.fbImgFile.files ? Array.from(el.fbImgFile.files).filter(isImg) : [];
+    if (fs.length) {
+      await runExport(el.fbImages, async setLbl => {
+        const bytes = await buildPdfFromImages(fs, setLbl);
+        const title = fs.length > 1 ? (fs.length + ' gambar') : fs[0].name;
+        await openFlipbook(bytes, title);
+      }, true);
+    } else if (el.fbImgFile.files && el.fbImgFile.files.length) {
+      toast(MSG.type, 'error');
+    }
+    el.fbImgFile.value = '';
+  });
+  el.fbSlices.addEventListener('click', () => runExport(el.fbSlices, async setLbl => {
+    const blob = await buildPdf(setLbl);
+    const base = String(state.name || 'gambar').replace(/\.[^.]+$/, '');
+    await openFlipbook(await blob.arrayBuffer(), 'potongan-' + base + '.pdf');
+  }));
+  el.fbList.addEventListener('click', () => runExport(el.fbList, async setLbl => {
+    if (!pdfItems.length) return;
+    const bytes = await mergePdfBytes(setLbl);
+    await openFlipbook(bytes, pdfItems.length > 1 ? 'PDF gabungan' : pdfItems[0].name);
+  }, true));
+
+  /* Kontrol flipbook */
+  el.fbFirst.addEventListener('click', () => fbGo(0));
+  el.fbPrev.addEventListener('click', () => fbGo(fb.t - 1));
+  el.fbNext.addEventListener('click', () => fbGo(fb.t + 1));
+  el.fbLast.addEventListener('click', () => fbGo(fb.maxT));
+  el.fbClose.addEventListener('click', closeFlipbook);
+
+  if (!document.fullscreenEnabled) el.fbFull.hidden = true;
+  el.fbFull.addEventListener('click', () => {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else if (el.fbStage.requestFullscreen) el.fbStage.requestFullscreen().catch(() => {});
+  });
+  document.addEventListener('fullscreenchange', () => fbLayout());
+
+  el.fbStage.addEventListener('keydown', e => {
+    const step = { ArrowRight: 1, ArrowLeft: -1, PageDown: 1, PageUp: -1 }[e.key];
+    if (step) { e.preventDefault(); fbGo(fb.t + step); }
+    else if (e.key === 'Home') { e.preventDefault(); fbGo(0); }
+    else if (e.key === 'End') { e.preventDefault(); fbGo(fb.maxT); }
+  });
+
+  let fbPtr = null;
+  el.fbView.addEventListener('pointerdown', e => {
+    fbPtr = { x: e.clientX, y: e.clientY };
+    el.fbStage.focus({ preventScroll: true });
+  });
+  el.fbView.addEventListener('pointercancel', () => { fbPtr = null; });
+  el.fbView.addEventListener('pointerup', e => {
+    if (!fbPtr) return;
+    const dx = e.clientX - fbPtr.x, dy = e.clientY - fbPtr.y;
+    fbPtr = null;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) { fbGo(fb.t + (dx < 0 ? 1 : -1)); return; }
+    if (Math.abs(dx) < 8 && Math.abs(dy) < 8) {
+      const r = el.fbView.getBoundingClientRect();
+      const rel = (e.clientX - r.left) / r.width;
+      const cut = fb.mode === 'double' ? 0.5 : 0.3;
+      fbGo(fb.t + (rel < cut ? -1 : 1));
+    }
+  });
+
+  /* ---------- Resize handling & init ---------- */
+  if ('ResizeObserver' in window) {
+    new ResizeObserver(() => layoutStage()).observe(el.wrap);
+    new ResizeObserver(() => { if (state.img) applyResultGrid(); }).observe(el.resultsCard);
+    new ResizeObserver(() => fbLayout()).observe(el.fbView);
+  }
+  window.addEventListener('resize', () => { layoutStage(); if (state.img) applyResultGrid(); fbLayout(); });
+
+  setGrid(3, 3);
+  renderPreview();
+  renderPdfList();
+  refreshLocks();
+})();
+</script>
+</body>
+</html>
